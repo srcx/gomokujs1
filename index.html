@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="iso-8859-2">
+<title>GomokuJS</title>
+<script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script type="text/javascript" src="main.js"></script>
+<script type="text/javascript" src="ai_average.js"></script>
+<script type="text/javascript" src="ai_dummy.js"></script>
+<link rel="stylesheet" href="main.css" type="text/css" media="screen" />
+<script type="text/javascript">
+<!--
+function init() {
+    var board = new GMBoard(
+    	    parseInt($('#size_input').val()),
+    	    parseInt($('#win_row_input').val())
+    	    );
+    var ui = new GMBoardUI(board,
+    	    document.getElementById('state'),
+            $('#playerX').val(),
+            $('#playerO').val()
+    	    );
+    var boardJQ = $('#board');
+    boardJQ.empty();
+    ui.build(boardJQ[0]);
+    ui.refreshBoard();
+    ui.refreshState();
+    ui.playNext();
+}
+$(document).ready(function() {
+	for (var i in AIRegistry) {
+		var ai = AIRegistry[i];
+	    $('#playerX').append('<option value="' + i + '">Computer (' + ai.prototype.name + ')</option>');
+        $('#playerO').append('<option value="' + i + '">Computer (' + ai.prototype.name + ')</option>');
+	}
+	init();
+	$('#restart_button').click(init);
+});
+//-->
+</script>
+</head>
+<body>
+<h1>GomokuJS</h1>
+<h4>by <a href="http://alivebutsleepy.srnet.cz">Štěpán Roh</a></h4>
+<div id="setup">
+<button id="restart_button">New game</button>
+<select id="playerX"><option>Human</option></select>
+vs
+<select id="playerO"><option>Human</option></select>
+<br>
+Board size: <input id="size_input" type="text" value="19">
+Stones in a row to win: <input id="win_row_input" type="text" value="5">
+</div>
+<div id="main">
+<div id="state"></div>
+<div id="board"></div>
+</div>
+</body>
+</html>
