@@ -85,7 +85,7 @@ function toggle_setup() {
 	$('#setup_overlay').css("visibility", show ? "visible" : "hidden");
 }
 function show_setup_type() {
-    if ($("input[@name='game_type']:checked").val() == 'local') {
+    if ($("input[name='game_type']:checked").val() == 'local') {
     	$("#setup_local").show();
         $("#setup_network").hide();
     } else {
@@ -168,7 +168,7 @@ $(document).ready(function() {
     $('#setupplay_button').click(function() {
     	toggle_setup();
     	ui.stop();
-        if ($("input[@name='game_type']:checked").val() == 'local') {
+        if ($("input[name='game_type']:checked").val() == 'local') {
         	net_mbox = null;
         	net_player = null;
         } else {
