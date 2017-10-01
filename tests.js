@@ -126,6 +126,10 @@ test("move to win 9", function() {
 	board.move(3, 2);
 	board.move(2, 1);
 	equal(board.winner, board.X);
+	equal(board.winningLine.col1, 3);
+	equal(board.winningLine.row1, 1);
+	equal(board.winningLine.col2, 1);
+	equal(board.winningLine.row2, 1);
 });
 
 test("move to draw 1", function() {

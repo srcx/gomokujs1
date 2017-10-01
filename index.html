@@ -4,37 +4,188 @@
 <meta charset="iso-8859-2">
 <title>GomokuJS</title>
 <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+<script type="text/javascript" src="../MMS/Math.uuid.js"></script>
+<script type="text/javascript" src="../MMS/mmslib.js"></script>
 <script type="text/javascript" src="main.js"></script>
 <script type="text/javascript" src="ai_average.js"></script>
-<script type="text/javascript" src="ai_dummy.js"></script>
+<!-- <script type="text/javascript" src="ai_dummy.js"></script>  -->
 <link rel="stylesheet" href="main.css" type="text/css" media="screen" />
 <script type="text/javascript">
 <!--
-function init() {
+var ui;
+var net_mbox;
+var net_lastMsg = new Array(-1, -1); // one arg means array length
+var net_player;
+function loadSettingsFromUI() {
+	return {
+            boardSize: $('#size_input').val(),
+            stonesToWin: $('#win_row_input').val(),
+            playerXId: $('#playerX').val(),
+            playerOId: $('#playerO').val()
+    };
+}
+function saveSettingsToUI(settings) {
+    $('#size_input').val(settings.boardSize);       
+    $('#win_row_input').val(settings.stonesToWin);
+    $("#playerX option[value='" + settings.playerXId + "']").attr('selected', true);
+    $("#playerO option[value='" + settings.playerOId + "']").attr('selected', true);
+}
+function init(settings) {
     var board = new GMBoard(
-    	    parseInt($('#size_input').val()),
-    	    parseInt($('#win_row_input').val())
+    	    parseInt(settings.boardSize),
+    	    parseInt(settings.stonesToWin)
     	    );
-    var ui = new GMBoardUI(board,
-    	    document.getElementById('state'),
-            $('#playerX').val(),
-            $('#playerO').val()
+    $('#rules').empty().append('Connect ' + board.stonesToWin + ' of one kind in a straight line to win');
+    var playerXId = settings.playerXId;
+    var playerOId = settings.playerOId;
+    if (net_player != null) {
+    	if (net_player == board.X) {
+    		playerOId = "Remote Human";
+            playerXId = "Human";
+    	} else {
+            playerOId = "Human";
+            playerXId = "Remote Human";
+    	}
+    }
+    ui = new GMBoardUI(board,
+    	    $('#state_left'), $('#state_middle'), $('#state_right'),
+            playerXId,
+            playerOId,
+            net_mbox,
+            net_lastMsg,
+            stateHandler,
+            restartHandler
     	    );
-    var boardJQ = $('#board');
+    var boardJQ = $('#board table tbody');
     boardJQ.empty();
     ui.build(boardJQ[0]);
     ui.refreshBoard();
     ui.refreshState();
     ui.playNext();
 }
+function toggle_setup() {
+	var show = $('#setup_overlay').css("visibility") == "hidden";
+    if (show) {
+    	if (net_mbox != null) {
+    		$('#setup_network_radio').attr('checked', true);
+    	} else {
+            $('#setup_local_radio').attr('checked', true);
+    	}
+    	$('#net_mbox').val(Math.uuidCompact());
+    	update_remote_link();
+        show_setup_type();
+    	var margin = 14;
+    	var top = $('#board').offset().top + margin;
+    	var left = $('#state table').offset().left + margin;
+    	var width = $('#state table').width() - 4 * margin - 2;
+        $('#setup').width(width);
+        $('#setup').offset({ top: top, left: left });
+        $('#setupplay_button').focus();
+    }
+	$('#setup_overlay').css("visibility", show ? "visible" : "hidden");
+}
+function show_setup_type() {
+    if ($("input[@name='game_type']:checked").val() == 'local') {
+    	$("#setup_local").show();
+        $("#setup_network").hide();
+    } else {
+        $("#setup_local").hide();
+        $("#setup_network").show();
+    }
+}
+function show_toolbar(remote) {
+	if (remote) {
+        $('#newgame_button').hide();
+		$('#restart_button').hide();
+		$('#resign_button').show();
+	} else {
+        $('#newgame_button').show();
+        $('#restart_button').show();
+        $('#resign_button').hide();
+	}
+}
+function update_remote_link() {
+	$('#remote_link').attr('href', '?gameid=' + $('#net_mbox').val()
+			+ '&player=2&boardSize=' + $('#size_input').val()
+			+ '&stonesToWin=' + $('#win_row_input').val());
+}
+function stateHandler() {
+    show_toolbar((net_mbox != null) && (ui.board.next != ui.board.None));
+}
+function restartHandler() {
+    ui.stop();
+    show_toolbar(net_mbox != null);
+    init(loadSettingsFromUI());
+}
 $(document).ready(function() {
+	net_mbox = gup("gameid");
+	net_player = gup("player");
+	if (net_player != null) {
+		net_player = parseInt(net_player);
+	}
+    show_toolbar(net_mbox != null);
+	var param_boardSize = gup("boardSize");
+	var param_stonesToWin = gup("stonesToWin");
+    if ((param_boardSize != null) || (param_stonesToWin != null)) {
+    	if (param_boardSize != null) {
+            $('#size_input').val(param_boardSize);
+    	}
+        if (param_stonesToWin != null) {
+            $('#win_row_input').val(param_stonesToWin);
+        }
+        var settings = loadSettingsFromUI();
+        GMSaveSettings(settings);
+    }
+    var onlyOneAI = (AIRegistry.length == 1);
+    if (onlyOneAI) {
+    	$('#playerX optgroup').remove();
+        $('#playerO optgroup').remove();
+    }
 	for (var i in AIRegistry) {
 		var ai = AIRegistry[i];
-	    $('#playerX').append('<option value="' + i + '">Computer (' + ai.prototype.name + ')</option>');
-        $('#playerO').append('<option value="' + i + '">Computer (' + ai.prototype.name + ')</option>');
+	    $('#playerX' + (onlyOneAI ? '' : ' optgroup')).append('<option value="' + i + '">' + ai.prototype.name + '</option>');
+        $('#playerO' + (onlyOneAI ? '' : ' optgroup')).append('<option value="' + i + '"' + ((i == 0) ? ' selected="selected"' : '') + '>' + ai.prototype.name + '</option>');
 	}
-	init();
-	$('#restart_button').click(init);
+	$('#playerX').attr('size', AIRegistry.length + (onlyOneAI ? 1 : 2));
+    $('#playerO').attr('size', AIRegistry.length + (onlyOneAI ? 1 : 2));
+    var settings = GMLoadSettings();
+    if (settings) {
+        saveSettingsToUI(settings);
+    } else {
+        settings = loadSettingsFromUI();
+    }
+	init(settings);
+	$('#restart_button').click(function() {
+		ui.restart();
+		restartHandler();
+	});
+    $('#resign_button').click(function() {
+    	if (ui.resign()) {
+    		stateHandler();
+    	}
+    });
+	$('#newgame_button').click(toggle_setup);
+    $('#setupplay_button').click(function() {
+    	toggle_setup();
+    	ui.stop();
+        if ($("input[@name='game_type']:checked").val() == 'local') {
+        	net_mbox = null;
+        	net_player = null;
+        } else {
+        	net_mbox = $('#net_mbox').val();
+        	net_player = ui.board.X;
+        }
+        net_lastMsg = new Array(-1, -1);
+        var settings = loadSettingsFromUI();
+        GMSaveSettings(settings);
+    	init(settings);
+    });
+    $('#switchsides_button').click(function() {
+    	var x = $('#playerX').val();
+    	var o = $('#playerO').val();
+    	$("#playerX option[value='" + o + "']").attr('selected', true);
+        $("#playerO option[value='" + x + "']").attr('selected', true);
+    });
 });
 //-->
 </script>
@@ -42,18 +193,50 @@ $(document).ready(function() {
 <body>
 <h1>GomokuJS</h1>
 <h4>by <a href="http://alivebutsleepy.srnet.cz">Štěpán Roh</a></h4>
+<div id="toolbar">
+<button id="newgame_button">New Game</button>
+<button id="restart_button">Restart Game</button>
+<button id="resign_button">Resign</button>
+</div>
+<div id="setup_overlay">
+<div id="setup_back"></div>
 <div id="setup">
-<button id="restart_button">New game</button>
-<select id="playerX"><option>Human</option></select>
-vs
-<select id="playerO"><option>Human</option></select>
-<br>
-Board size: <input id="size_input" type="text" value="19">
-Stones in a row to win: <input id="win_row_input" type="text" value="5">
+<h4>New Game Settings</h4>
+<div>
+<input type="radio" name="game_type" id="setup_local_radio" value="local" checked="checked" onchange="show_setup_type()" onclick="show_setup_type()" onkeypress="show_setup_type()"><label for="setup_local_radio">Local Game</label>
+<input type="radio" name="game_type" id="setup_network_radio" value="network" onchange="show_setup_type()" onclick="show_setup_type()" onkeypress="show_setup_type()"><label for="setup_network_radio">Network Game</label>
+</div>
+<div id="setup_local">
+<select id="playerX"><option value="Human" selected="selected">Human</option><optgroup label="Computer"></optgroup></select>
+<button id="switchsides_button">&#8596;</button>
+<select id="playerO"><option value="Human">Human</option><optgroup label="Computer"></optgroup></select>
+</div>
+<div id="setup_network">
+<input id="net_mbox" type="text" style="display: none">
+Play as <img src="square_x.png" alt="X"><br>
+<a id="remote_link" href="">Link to the game</a> for remote player
+</div>
+<div>
+Board size: <input id="size_input" type="number" value="19" min="1" onchange="update_remote_link()">
+<button onclick="$('#size_input').val(3); $('#size_input').change()">3</button>
+<button onclick="$('#size_input').val(19); $('#size_input').change()">19</button>
+</div>
+<div>
+Stones in a straight line to win: <input id="win_row_input" type="number" value="5" min="1" onchange="update_remote_link()">
+<button onclick="$('#win_row_input').val(3); $('#win_row_input').change()">3</button>
+<button onclick="$('#win_row_input').val(5); $('#win_row_input').change()">5</button>
+</div>
+<div>
+<button id="setupplay_button">Play</button>
+</div>
+</div>
 </div>
 <div id="main">
-<div id="state"></div>
-<div id="board"></div>
+<div id="rules"></div>
+<div id="state">
+<table><tr><td id="state_left"></td><td id="state_middle"></td><td id="state_right"></td></tr></table>
+</div>
+<div id="board"><table><tbody></tbody></table></div>
 </div>
 </body>
 </html>

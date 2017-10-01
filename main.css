@@ -1,13 +1,18 @@
-table {
+body {
+	background-color: white;
+    text-align: center;
+    font-family: DejaVu Sans, sans;
+}
+#board table {
 	border-collapse:collapse;
 	font-family: monospace;
 	margin-left: auto;
 	margin-right: auto;
 }
-table, td {
+#board table, #board td {
     border: 1px solid black;
 }
-td img {
+td img, #setup_network img {
     vertical-align: middle;
 }
 #size_input {
@@ -16,11 +21,68 @@ td img {
 #win_row_input {
     width: 3em;
 }
-h1, h2, h3, h4, h5, h6, #state {
-	text-align: center;
+#toolbar {
+    width: 514px;
+    margin-left: auto;
+    margin-right: auto;
 }
-#main {
+#toolbar button {
+	width: 49%;
+}
+#setup_overlay {
+	visibility: hidden;
+}
+#setup_back {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    background: #000000;
+    filter: alpha(opacity=10);
+    opacity: .10;
 }
 #setup {
-    text-align: center;
+    position: absolute;
+    background-color: white;
+    border: 1px solid black;
+    padding: 14px;
+    overflow: hidden;
+}
+#setup h4 {
+    margin-top: 0px;
+}
+#setup div {
+	margin-bottom: 0.5em;
+}
+#setup div select {
+    vertical-align: middle;
+}
+#setupplay_button {
+	width: 50%;
+    margin-top: 1em;
+	margin-bottom: 0px;
+}
+#state table, #state td {
+	border: none;
+    white-space: nowrap;
+}
+#state table {
+    width: 514px; /* 19 squares * (24px + 2px for margins + 1px for left border) + 1 px for right table border */
+    margin-left: auto;
+    margin-right: auto;
+}
+#state_left {
+	text-align: left;
+	width: 10em;
+}
+#state_right {
+    text-align: right;
+    width: 10em;
+}
+.winning_square {
+	background-color: #FFFF00;
+}
+#rules {
+	padding-top: 6px;
 }
