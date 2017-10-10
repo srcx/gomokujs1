@@ -189,8 +189,8 @@ $(document).ready(function() {
     $('#switchsides_button').click(function() {
     	var x = $('#playerX').val();
     	var o = $('#playerO').val();
-    	$("#playerX option[value='" + o + "']").attr('selected', true);
-        $("#playerO option[value='" + x + "']").attr('selected', true);
+    	$("#playerX").val(o);
+    	$("#playerO").val(x);
     });
 });
 //-->
