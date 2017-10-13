@@ -47,12 +47,6 @@ function init(settings) {
             playerXId = "Remote Human";
     	}
     }
-	if (playerXId == null || playerXId === "null") {
-		playerXId = "Human";
-	}
-	if (playerOId == null || playerOId === "null") {
-		playerOId = "Human";
-	}
     ui = new GMBoardUI(board,
     	    $('#state_left'), $('#state_middle'), $('#state_right'),
             playerXId,

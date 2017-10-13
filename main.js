@@ -1,6 +1,9 @@
 function sgn(x) {
 	return (x > 0) ? 1 : (x < 0) ? -1 : 0;
 }
+function isInt(num) {
+	return typeof num === 'number' && num % 1 == 0;
+}
 var GMBoard = function(size, stonesToWin) {
 	this.size = size;
 	this.data = new Array();
@@ -196,8 +199,8 @@ var GMBoardUI = function(board, stateLeft, stateMiddle, stateRight, playerX, pla
 	this.stateLeft = stateLeft;
 	this.stateMiddle = stateMiddle;
 	this.stateRight = stateRight;
-	this.playerX = ((playerX == this.Human) || (playerX == this.RemoteHuman)) ? playerX : new AIRegistry[parseInt(playerX)](this.board);
-	this.playerO = ((playerO == this.Human) || (playerO == this.RemoteHuman)) ? playerO : new AIRegistry[parseInt(playerO)](this.board);
+	this.playerX = this._player(playerX);
+	this.playerO = this._player(playerO);
 	this.remotePlay = false;
 	this.netStateCB = netStateCB;
 	if (mbox != null) {
@@ -229,6 +232,16 @@ var GMBoardUI = function(board, stateLeft, stateMiddle, stateRight, playerX, pla
 	}
 };
 GMBoardUI.prototype = {
+	_player: function(player) {
+		if (player == this.Human || player == this.RemoteHuman) {
+			return player;
+		}
+		var aiIndex = parseInt(player);
+		if (isInt(aiIndex) && aiIndex < AIRegistry.length) {
+			return new AIRegistry[aiIndex](this.board);
+		}
+		return this.Human;
+	},
 	squareElementId: function(col, row) {
 		return "GMBoard_" + col + "_" + row;
     },
