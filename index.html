@@ -24,11 +24,17 @@ function loadSettingsFromUI() {
             playerOId: $('#playerO').val()
     };
 }
+function selectPlayerInUI(playerSide, playerId) {
+	if (playerId !== 'Human' && playerId >= AIRegistry.length) {
+		playerId = 'Human';
+	}
+	$("#player" + playerSide).val(playerId);
+} 
 function saveSettingsToUI(settings) {
     $('#size_input').val(settings.boardSize);       
     $('#win_row_input').val(settings.stonesToWin);
-	$("#playerX").val(settings.playerXId);
-	$("#playerO").val(settings.playerOId);
+    selectPlayerInUI('X', settings.playerXId);
+    selectPlayerInUI('O', settings.playerOId);
 }
 function init(settings) {
     var board = new GMBoard(
@@ -139,10 +145,12 @@ $(document).ready(function() {
 	for (var i in AIRegistry) {
 		var ai = AIRegistry[i];
 	    $('#playerX').append('<option value="' + i + '">' + ai.prototype.name + '</option>');
-        $('#playerO').append('<option value="' + i + '"' + ((i == 0) ? ' selected="selected"' : '') + '>' + ai.prototype.name + '</option>');
+        $('#playerO').append('<option value="' + i + '">' + ai.prototype.name + '</option>');
 	}
 	$('#playerX').attr('size', AIRegistry.length + 1);
     $('#playerO').attr('size', AIRegistry.length + 1);
+    selectPlayerInUI('X', 'Human');
+    selectPlayerInUI('O', 0);
     var settings = GMLoadSettings();
     if (settings) {
         saveSettingsToUI(settings);
@@ -202,7 +210,7 @@ $(document).ready(function() {
 <input type="radio" name="game_type" id="setup_network_radio" value="network" onchange="show_setup_type()" onclick="show_setup_type()" onkeypress="show_setup_type()"><label for="setup_network_radio">Network Game</label>
 </div>
 <div id="setup_local">
-<select id="playerX"><option value="Human" selected="selected">Human</option></select>
+<select id="playerX"><option value="Human">Human</option></select>
 <button id="switchsides_button">&#8596;</button>
 <select id="playerO"><option value="Human">Human</option></select>
 </div>
