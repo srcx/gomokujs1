@@ -142,18 +142,13 @@ $(document).ready(function() {
         var settings = loadSettingsFromUI();
         GMSaveSettings(settings);
     }
-    var onlyOneAI = (AIRegistry.length == 1);
-    if (onlyOneAI) {
-    	$('#playerX optgroup').remove();
-        $('#playerO optgroup').remove();
-    }
 	for (var i in AIRegistry) {
 		var ai = AIRegistry[i];
-	    $('#playerX' + (onlyOneAI ? '' : ' optgroup')).append('<option value="' + i + '">' + ai.prototype.name + '</option>');
-        $('#playerO' + (onlyOneAI ? '' : ' optgroup')).append('<option value="' + i + '"' + ((i == 0) ? ' selected="selected"' : '') + '>' + ai.prototype.name + '</option>');
+	    $('#playerX').append('<option value="' + i + '">' + ai.prototype.name + '</option>');
+        $('#playerO').append('<option value="' + i + '"' + ((i == 0) ? ' selected="selected"' : '') + '>' + ai.prototype.name + '</option>');
 	}
-	$('#playerX').attr('size', AIRegistry.length + (onlyOneAI ? 1 : 2));
-    $('#playerO').attr('size', AIRegistry.length + (onlyOneAI ? 1 : 2));
+	$('#playerX').attr('size', AIRegistry.length + 1);
+    $('#playerO').attr('size', AIRegistry.length + 1);
     var settings = GMLoadSettings();
     if (settings) {
         saveSettingsToUI(settings);
@@ -213,9 +208,9 @@ $(document).ready(function() {
 <input type="radio" name="game_type" id="setup_network_radio" value="network" onchange="show_setup_type()" onclick="show_setup_type()" onkeypress="show_setup_type()"><label for="setup_network_radio">Network Game</label>
 </div>
 <div id="setup_local">
-<select id="playerX"><option value="Human" selected="selected">Human</option><optgroup label="Computer"></optgroup></select>
+<select id="playerX"><option value="Human" selected="selected">Human</option></select>
 <button id="switchsides_button">&#8596;</button>
-<select id="playerO"><option value="Human">Human</option><optgroup label="Computer"></optgroup></select>
+<select id="playerO"><option value="Human">Human</option></select>
 </div>
 <div id="setup_network">
 <input id="net_mbox" type="text" style="display: none">
