@@ -27,8 +27,8 @@ function loadSettingsFromUI() {
 function saveSettingsToUI(settings) {
     $('#size_input').val(settings.boardSize);       
     $('#win_row_input').val(settings.stonesToWin);
-    $("#playerX option[value='" + settings.playerXId + "']").attr('selected', true);
-    $("#playerO option[value='" + settings.playerOId + "']").attr('selected', true);
+	$("#playerX").val(settings.playerXId);
+	$("#playerO").val(settings.playerOId);
 }
 function init(settings) {
     var board = new GMBoard(
